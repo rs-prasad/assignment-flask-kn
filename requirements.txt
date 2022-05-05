@@ -1,0 +1,7 @@
+Flask==2.0.3
+Flask-SQLAlchemy==2.5.1
+requests==2.27.1
+Flask-WTF==1.0.1
+postgres==4.0
+GeoAlchemy2==0.11.1
+psycopg2==2.9.3
