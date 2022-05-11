@@ -39,3 +39,7 @@ class UserPost(db.Model):
     @staticmethod
     def get_last_id():
         return db.session.query(func.max(UserPost.id)).scalar()
+
+    @staticmethod
+    def fetch_all_posts():
+        return UserPost.query.all()
