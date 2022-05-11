@@ -1,4 +1,5 @@
 import math
+import datetime
 
 from flask import request, make_response
 from .model import UserPost
@@ -22,12 +23,18 @@ def validate_cordinate_points(lat,lon):
         return [False, "invalid longitude"]
     return[True, "no error"]
 
+def time_difference(created_time):
+    current_time = datetime.datetime.now()
+    td = current_time - created_time
+    time_difference_object = {"days":td.days,"hours":td.seconds//3600,"minitues":(td.seconds%3600)//60}
+    return time_difference_object
+
+# view functions
 def add_posts():
     username = request.form.get('username',default=None, type=str)
     text = request.form.get('text',default=None, type=str)
     lat = request.form.get("lat", default=None, type=float)
     lon = request.form.get("lon", default=None, type=float)
-    print(lat, lon) ###
     [validation, error_msg] = validate_post_data(username,text,lat,lon)
     if(validation):
         id = 1
@@ -72,11 +79,10 @@ def get_posts(page):
             return "No more posts",200
         for i in range(start, min(end,len(dict_list))):
             item = dict_list[i]
+            timestamp = time_difference(item['value'].created_date)
             post = {"username":item['value'].username,"distance":item['key'],
-                    "text":item['value'].text}
+                    "text":item['value'].text,"timestamp":timestamp}
             resultant_posts.append(post)
-        for i in resultant_posts: #####
-            print(i)
         return {"data":resultant_posts,"total_posts":len(dict_list)},200
     else:
         return errorMsg,400
