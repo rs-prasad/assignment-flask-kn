@@ -4,41 +4,40 @@ from .model import UserPost
 # helper functions
 
 
-def validate_post_data(data):
-    username = data.get('username')
-    text = data.get('text')
-    try:
-        lat = float(data.get('lat'))
-    except:
-        return [False, "invalid latitude"]
-    try:
-        lon = float(data.get('lon'))
-    except:
-        return [False, "invalid latitude"]
-
-    if not isinstance(username, str) or len(username) <= 0:
+def validate_post_data(username,text,lat,lon):
+    if username == None or len(username) <= 0:
         return [False, "invalid username"]
-    elif not isinstance(text, str) or len(text) <= 0:
+    elif text == None or len(text) <= 0 or len(text)>1000:
         return [False, "invalid text"]
-    elif not isinstance(lat, float) or lat < -90 or lat > 90:
+    elif lat == None or lat < -90 or lat > 90:
         return [False, "invalid latitude"]
-    elif not isinstance(lon, float) or lon < -180 or lon > 180:
+    elif lon == None or lon < -180 or lon > 180:
         return [False, "invalid longitude"]
     return[True, "no error"]
 
 
 def add_posts():
-    data = request.form
-    [validation, error_msg] = validate_post_data(data)
+    username = request.form.get('username',default=None, type=str)
+    text = request.form.get('text',default=None, type=str)
+    lat = request.form.get("lat", default=None, type=float)
+    lon = request.form.get("lon", default=None, type=float)
+    print(lat, lon) ###
+    [validation, error_msg] = validate_post_data(username,text,lat,lon)
     if(validation):
-        username = data.get('username')
-        text = data.get('text')
-        lat = float(data.get('lat'))
-        lon = float(data.get('lon'))
-        UserPost.put_post_in_db(username=username, text=text, lat=lat, lon=lon)
-        resp = make_response(
-            {"status": "success", "msg": "data successfully added"})
-        resp.status_code = 200
-        resp.headers['Content-Type'] = 'Application/json'
-        return resp
-    return error_msg, 400
+        id = 1
+        try:
+            id = UserPost.get_last_id() + 1
+        except:
+            print("table does not exist")
+            
+        is_post_added = UserPost.put_post_in_db(id=id,username=username, text=text, lat=lat, lon=lon)
+        if(is_post_added==True):
+            resp = make_response(
+                {"status": "success", "msg": "data successfully added"})
+            resp.status_code = 200
+            resp.headers['Content-Type'] = 'Application/json'
+            return resp
+        else:
+            return is_post_added,500
+    else:
+        return error_msg, 400
